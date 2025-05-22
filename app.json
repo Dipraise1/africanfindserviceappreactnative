@@ -1,0 +1,128 @@
+{
+  "expo": {
+    "name": "African Service Finder",
+    "slug": "african-service-finder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "africanservicefinder",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/your-project-id",
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.africanservice.finder",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to show services near you.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses your location to show services near you.",
+        "NSLocationAlwaysUsageDescription": "This app uses your location to show services near you.",
+        "NSCameraUsageDescription": "This app uses the camera to upload profile pictures.",
+        "NSPhotoLibraryUsageDescription": "This app uses the photo library to select profile pictures.",
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ],
+        "CFBundleAllowMixedLocalizations": true
+      },
+      "config": {
+        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_IOS_API_KEY"
+      },
+      "associatedDomains": [
+        "applinks:africanservicefinder.com"
+      ],
+      "usesAppleSignIn": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4CAF50"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "package": "com.africanservice.finder",
+      "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_ANDROID_API_KEY"
+        }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "africanservicefinder.com",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow African Service Finder to use your location to find nearby services.",
+          "locationAlwaysPermission": "Allow African Service Finder to use your location to find nearby services.",
+          "locationWhenInUsePermission": "Allow African Service Finder to use your location to find nearby services."
+        }
+      ],
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      "expo-firebase-core"
+    ],
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#4CAF50",
+      "iosDisplayInForeground": true,
+      "androidMode": "default"
+    },
+    "description": "African Service Finder helps you discover, book, and rate local service providers across Africa. Find trusted professionals for plumbing, electrical work, cleaning, beauty services, and more.",
+    "privacy": "public",
+    "primaryColor": "#4CAF50",
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
