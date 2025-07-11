@@ -1,27 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, StatusBar, RefreshControl, } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
-import { BACKGROUND, SURFACE, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_LIGHT, SHADOW, PRIMARY } from '../constants/colors';
-import { getCurrentLocation } from '../services/apiService';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import {
+    Dimensions,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import CategoryCard from '../components/CategoryCard';
 import LoadingIndicator from '../components/LoadingIndicator';
 import ResponsiveContainer from '../components/ResponsiveContainer';
-import CategoryCard from '../components/CategoryCard';
 import ServiceCard from '../components/ServiceCard';
-import GridLayout from '../components/GridLayout';
 import { theme } from '../constants/theme';
-import { isTablet, scaleWidth, scaleHeight, fontSize, spacing, borderRadius } from '../utils/responsive';
+import { getCurrentLocation } from '../services/apiService';
+import { scaleWidth } from '../utils/responsive';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const SERVICE_CATEGORIES = [
-  { id: 'plumber', name: 'Plumbing', icon: 'water', color: '#2196F3' },
-  { id: 'electrician', name: 'Electrician', icon: 'flash', color: '#FFC107' },
-  { id: 'carpenter', name: 'Carpentry', icon: 'hammer', color: '#795548' },
-  { id: 'cleaner', name: 'Cleaning', icon: 'home', color: '#00BCD4' },
-  { id: 'mechanic', name: 'Auto Mechanic', icon: 'car', color: '#F44336' },
-  { id: 'beautician', name: 'Beauty', icon: 'cut', color: '#E91E63' },
-  { id: 'painter', name: 'Painting', icon: 'color-palette', color: '#9C27B0' },
-  { id: 'gardener', name: 'Gardening', icon: 'leaf', color: '#4CAF50' },
+  { id: 'plumber', name: 'Plumbing', icon: 'water', color: theme.colors.info },
+  { id: 'electrician', name: 'Electrician', icon: 'flash', color: theme.colors.warning },
+  { id: 'carpenter', name: 'Carpentry', icon: 'hammer', color: theme.colors.accent },
+  { id: 'cleaner', name: 'Cleaning', icon: 'home', color: theme.colors.success },
+  { id: 'mechanic', name: 'Auto Mechanic', icon: 'car', color: theme.colors.error },
+  { id: 'beautician', name: 'Beauty', icon: 'cut', color: theme.colors.favorite },
+  { id: 'painter', name: 'Painting', icon: 'color-palette', color: theme.colors.secondary },
+  { id: 'gardener', name: 'Gardening', icon: 'leaf', color: theme.colors.primary },
 ];
 
 const HomeScreen = () => {
@@ -32,6 +42,7 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Authentication will be implemented later
   useFocusEffect(
@@ -57,6 +68,14 @@ const HomeScreen = () => {
     };
 
     fetchLocation();
+  }, []);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    // Simulate refresh
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
   }, []);
 
   if (isLoading) {
@@ -89,103 +108,256 @@ const HomeScreen = () => {
 
   return (
     <ResponsiveContainer style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={SURFACE} />
+      <StatusBar barStyle="light-content" backgroundColor={theme.colors.background} translucent />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>African Service Finder</Text>
-          <Text style={styles.subtitle}>
-            {location ? 'Your Location' : 'Finding your location...'}
-          </Text>
-        </View>
+      {/* Hero Header with Glass Effect */}
+      <View style={styles.heroHeader}>
+        {/* Background Gradient Overlay */}
+        <View style={styles.gradientOverlay} />
         
-        {isAuthenticated ? (
-          <View style={styles.headerButtons}>
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={() => navigation.navigate('notifications')}
-            >
-              <View style={styles.notificationIconContainer}>
+        {/* Header Content */}
+        <View style={styles.headerContent}>
+          {/* Top Navigation Bar */}
+          <View style={styles.topNavBar}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.appTitle}>African Service Finder</Text>
+              <View style={styles.locationContainer}>
                 <Ionicons 
-                  name="notifications-outline" 
-                  size={isTablet ? 28 : 24} 
+                  name="location" 
+                  size={14} 
                   color={theme.colors.primary} 
                 />
-                <View style={styles.notificationBadge} />
+                <Text style={styles.locationText}>
+                  {location ? 'Your Location' : 'Finding location...'}
+                </Text>
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={() => navigation.navigate('booking-history')}
-            >
+            </View>
+            
+            {/* User Actions */}
+            {isAuthenticated ? (
+              <View style={styles.userActions}>
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => navigation.navigate('notifications')}
+                >
+                  <View style={styles.notificationContainer}>
+                    <Ionicons 
+                      name="notifications-outline" 
+                      size={22} 
+                      color={theme.colors.textPrimary} 
+                    />
+                    <View style={styles.notificationBadge} />
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => navigation.navigate('favorites')}
+                >
+                  <Ionicons 
+                    name="heart-outline" 
+                    size={22} 
+                    color={theme.colors.textPrimary} 
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.profileButton}
+                  onPress={() => navigation.navigate('profile')}
+                >
+                  <Ionicons 
+                    name="person-circle" 
+                    size={28} 
+                    color={theme.colors.primary} 
+                  />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity 
+                style={styles.loginButton}
+                onPress={() => navigation.navigate('login')}
+              >
+                <Text style={styles.loginButtonText}>Login</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {/* Hero Content */}
+          <View style={styles.heroContent}>
+            <Text style={styles.heroTitle}>Find Trusted{'\n'}Local Services</Text>
+            <Text style={styles.heroSubtitle}>
+              Discover professional service providers in your area with verified reviews and ratings
+            </Text>
+          </View>
+          
+          {/* Enhanced Search Bar */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputContainer}>
               <Ionicons 
-                name="calendar-outline" 
-                size={isTablet ? 28 : 24} 
-                color={theme.colors.primary} 
+                name="search" 
+                size={20} 
+                color={theme.colors.textSecondary} 
+                style={styles.searchIcon} 
               />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.profileButton}
-              onPress={() => navigation.navigate('profile')}
-            >
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search for services, providers..."
+                placeholderTextColor={theme.colors.textTertiary}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchQuery('')}
+                  style={styles.clearButton}
+                >
+                  <Ionicons 
+                    name="close-circle" 
+                    size={18} 
+                    color={theme.colors.textSecondary} 
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity style={styles.filterButton}>
               <Ionicons 
-                name="person-circle" 
-                size={isTablet ? 36 : 32} 
+                name="options-outline" 
+                size={20} 
                 color={theme.colors.primary} 
               />
             </TouchableOpacity>
           </View>
-        ) : (
-          <TouchableOpacity 
-            style={styles.loginButton}
-            onPress={() => navigation.navigate('login')}
-          >
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons 
-          name="search" 
-          size={isTablet ? 24 : 20} 
-          color={theme.colors.textSecondary} 
-          style={styles.searchIcon} 
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search for services..."
-          placeholderTextColor={theme.colors.textLight}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+        </View>
       </View>
 
-      {/* Main Content */}
+      {/* Main Content with Refreshable ScrollView */}
       <ScrollView 
-        style={styles.contentContainer}
+        style={styles.mainContent}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+          />
+        }
       >
-        {/* Categories Section */}
+        {/* Quick Stats Cards */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>500+</Text>
+            <Text style={styles.statLabel}>Verified Providers</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>15k+</Text>
+            <Text style={styles.statLabel}>Happy Customers</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>4.8★</Text>
+            <Text style={styles.statLabel}>Average Rating</Text>
+          </View>
+        </View>
+
+        {/* Service Categories Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Categories</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Service Categories</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.categoriesGrid}>
+            {SERVICE_CATEGORIES.map((category, index) => (
+              <View key={category.id} style={styles.categoryWrapper}>
+                <CategoryCard
+                  category={category}
+                  onPress={handleCategoryPress}
+                  variant={index % 3 === 0 ? 'glass' : 'default'}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Featured Services Section */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Featured Services</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.sectionSubtitle}>
+            Top-rated service providers in your area
+          </Text>
           
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesScrollContainer}
+            contentContainerStyle={styles.featuredScrollContainer}
           >
-            {SERVICE_CATEGORIES.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                onPress={handleCategoryPress}
-                compact={!isTablet}
-              />
-            ))}
+            {/* Mock featured services - would come from API */}
+            <ServiceCard 
+              service={{
+                id: '1',
+                name: 'John Plumbing Services',
+                category: 'plumber',
+                rating: 4.9,
+                reviewCount: 128,
+                location: '1.2 km away',
+                price: '75',
+                oldPrice: '90',
+                discount: 15,
+                isFavorite: false,
+                premium: true,
+                image: 'https://images.unsplash.com/photo-1621263764928-df1444c5e859',
+              }}
+              onPress={() => navigation.navigate('service-details', { serviceId: '1' })}
+              variant="featured"
+              style={styles.featuredCard}
+            />
+            <ServiceCard 
+              service={{
+                id: '2',
+                name: 'Bright Electric',
+                category: 'electrician',
+                rating: 4.8,
+                reviewCount: 94,
+                location: '0.8 km away',
+                price: '65',
+                isFavorite: true,
+                image: 'https://images.unsplash.com/photo-1604081192412-7e56f7141923',
+              }}
+              onPress={() => navigation.navigate('service-details', { serviceId: '2' })}
+              variant="glass"
+              style={styles.featuredCard}
+            />
           </ScrollView>
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.quickActionsContainer}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.quickActionsGrid}>
+            <TouchableOpacity style={styles.quickActionCard}>
+              <Ionicons name="calendar-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.quickActionText}>My Bookings</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickActionCard}>
+              <Ionicons name="heart-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.quickActionText}>Favorites</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickActionCard}>
+              <Ionicons name="headset-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.quickActionText}>Support</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickActionCard}>
+              <Ionicons name="star-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.quickActionText}>Reviews</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
@@ -199,124 +371,237 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
+  heroHeader: {
+    backgroundColor: theme.colors.surfaceElevated,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingBottom: theme.spacing.xl,
+    position: 'relative',
+    ...theme.shadows.large,
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(212, 175, 55, 0.05)',
+  },
+  headerContent: {
+    paddingHorizontal: theme.spacing.lg,
+    zIndex: 1,
+  },
+  topNavBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-    paddingTop: spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.xl,
   },
   titleContainer: {
     flex: 1,
   },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: 'bold',
+  appTitle: {
+    ...theme.typography.headline,
     color: theme.colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: theme.spacing.xs,
   },
-  subtitle: {
-    fontSize: fontSize.sm,
-    color: theme.colors.textSecondary,
-  },
-  headerButtons: {
+  locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  headerButton: {
-    padding: spacing.xs,
-    marginRight: spacing.sm,
+  locationText: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    marginLeft: 4,
   },
-  notificationIconContainer: {
+  userActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  actionButton: {
+    padding: theme.spacing.xs,
+    borderRadius: theme.borderRadius.round,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  notificationContainer: {
     position: 'relative',
   },
   notificationBadge: {
     position: 'absolute',
     top: -2,
     right: -2,
-    width: scaleWidth(10),
-    height: scaleWidth(10),
-    borderRadius: scaleWidth(5),
-    backgroundColor: theme.colors.notification,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.error,
     borderWidth: 1,
-    borderColor: theme.colors.white,
+    borderColor: theme.colors.surfaceElevated,
   },
   profileButton: {
-    padding: spacing.xs,
+    padding: theme.spacing.xs,
   },
   loginButton: {
     backgroundColor: theme.colors.primary,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.round,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.round,
+    ...theme.shadows.medium,
   },
   loginButtonText: {
-    color: theme.colors.white,
-    fontWeight: '500',
-    fontSize: fontSize.sm,
+    color: theme.colors.textInverse,
+    fontWeight: '600',
+    fontSize: theme.fontSize.sm,
+  },
+  heroContent: {
+    marginBottom: theme.spacing.xl,
+  },
+  heroTitle: {
+    ...theme.typography.display,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.md,
+    lineHeight: 42,
+  },
+  heroSubtitle: {
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
+    lineHeight: 24,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
-    ...theme.shadows.small,
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing.md,
+    height: 52,
+    ...theme.shadows.medium,
   },
   searchIcon: {
-    marginRight: spacing.sm,
+    marginRight: theme.spacing.sm,
   },
   searchInput: {
     flex: 1,
-    height: scaleHeight(50),
-    fontSize: fontSize.md,
+    fontSize: theme.fontSize.md,
     color: theme.colors.textPrimary,
-    paddingVertical: spacing.sm,
+    paddingVertical: 0,
   },
-  contentContainer: {
+  clearButton: {
+    padding: theme.spacing.xs,
+  },
+  filterButton: {
+    backgroundColor: theme.colors.surface,
+    width: 52,
+    height: 52,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.shadows.medium,
+  },
+  mainContent: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: theme.spacing.xxl,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
+    gap: theme.spacing.sm,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    alignItems: 'center',
+    ...theme.shadows.small,
+  },
+  statNumber: {
+    ...theme.typography.title,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  statLabel: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
   sectionContainer: {
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.md,
+    marginBottom: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: theme.spacing.sm,
   },
   sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
+    ...theme.typography.title,
     color: theme.colors.textPrimary,
   },
+  sectionSubtitle: {
+    ...theme.typography.bodySecondary,
+    marginBottom: theme.spacing.lg,
+  },
   seeAllText: {
-    fontSize: fontSize.sm,
+    ...theme.typography.caption,
     color: theme.colors.primary,
     fontWeight: '600',
   },
-  categoriesScrollContainer: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  servicesGrid: {
+  categoriesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+  },
+  categoryWrapper: {
+    width: (SCREEN_WIDTH - theme.spacing.lg * 2 - theme.spacing.sm * 3) / 4,
+  },
+  featuredScrollContainer: {
+    paddingRight: theme.spacing.lg,
+  },
+  featuredCard: {
+    width: scaleWidth(280),
+    marginRight: theme.spacing.md,
+  },
+  quickActionsContainer: {
+    paddingHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.md,
+  },
+  quickActionCard: {
+    width: (SCREEN_WIDTH - theme.spacing.lg * 2 - theme.spacing.sm) / 2,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    alignItems: 'center',
+    ...theme.shadows.small,
+  },
+  quickActionText: {
+    ...theme.typography.caption,
+    color: theme.colors.textPrimary,
+    marginTop: theme.spacing.sm,
+    fontWeight: '500',
   },
   errorText: {
     color: theme.colors.error,
     textAlign: 'center',
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
-    fontSize: fontSize.md,
+    margin: theme.spacing.md,
+    ...theme.typography.caption,
   },
 });
 

@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
-  KeyboardAvoidingView, 
-  Platform,
-  ScrollView,
-  Alert,
-  Dimensions,
-  StatusBar
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import * as SecureStore from 'expo-secure-store';
-import { loginUser, signInWithGoogle } from '../services/authService';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import {
+    Alert,
+    Dimensions,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { loginUser } from '../services/authService';
 
-import ResponsiveContainer from '../components/ResponsiveContainer';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import ResponsiveContainer from '../components/ResponsiveContainer';
 import { theme } from '../constants/theme';
-import { isTablet, scaleWidth, scaleHeight, fontSize, spacing, borderRadius } from '../utils/responsive';
+import { isTablet } from '../utils/responsive';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -38,14 +40,21 @@ const LoginScreen = () => {
     setIsLoading(true);
 
     try {
-      // Login with Firebase
+      // Login with mock auth service
       const userData = await loginUser(email, password);
       
-      // Navigate to home screen
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'home' }],
-      });
+      Alert.alert('Success', 'Logged in successfully!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            // Navigate to home screen
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'home' }],
+            });
+          }
+        }
+      ]);
     } catch (error) {
       Alert.alert('Login Failed', error.message || 'Something went wrong');
     } finally {
@@ -56,14 +65,8 @@ const LoginScreen = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      // Sign in with Google using Firebase
-      const userData = await signInWithGoogle();
-      
-      // Navigate to home screen
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'home' }],
-      });
+      // Mock Google sign-in
+      Alert.alert('Google Sign-In', 'Google sign-in would be implemented here');
     } catch (error) {
       Alert.alert('Google Sign-In Failed', error.message || 'Something went wrong');
     } finally {
@@ -72,8 +75,21 @@ const LoginScreen = () => {
   };
 
   return (
-    <ResponsiveContainer style={styles.container} backgroundColor={theme.colors.background}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+    <ResponsiveContainer style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={theme.colors.background} translucent />
+      
+      {/* Background Gradient Overlay */}
+      <View style={styles.backgroundGradient} />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
+        </TouchableOpacity>
+      </View>
       
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -83,85 +99,133 @@ const LoginScreen = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../assets/icon.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.appName}>African Service Finder</Text>
-            <Text style={styles.tagline}>Find trusted local services</Text>
-          </View>
-          
-          <View style={styles.formContainer}>
-            <Text style={styles.title}>Welcome Back</Text>
-            
-            <Input
-              label="Email Address"
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              icon="mail-outline"
-              style={styles.inputField}
-            />
-            
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              icon="lock-closed-outline"
-              style={styles.inputField}
-            />
-            
-            <View style={styles.forgotPasswordContainer}>
-              <Text 
-                style={styles.forgotPasswordText}
-                onPress={() => navigation.navigate('reset-password')}
-              >
-                Forgot Password?
+          {/* Hero Section */}
+          <View style={styles.heroSection}>
+            <View style={styles.logoContainer}>
+              <View style={styles.logoWrapper}>
+                <Image 
+                  source={require('../../assets/icon.png')} 
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={styles.heroTitle}>Welcome Back</Text>
+              <Text style={styles.heroSubtitle}>
+                Sign in to access thousands of trusted service providers
               </Text>
             </View>
-            
-            <Button
-              title={isLoading ? "Logging in..." : "Login"}
-              onPress={handleLogin}
-              disabled={isLoading}
-              loading={isLoading}
-              type="primary"
-              size="large"
-              fullWidth
-              style={styles.loginButton}
-            />
-            
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OR</Text>
-              <View style={styles.dividerLine} />
-            </View>
-            
-            <Button
-              title="Continue with Google"
-              onPress={handleGoogleSignIn}
-              type="outline"
-              size="large"
-              icon="logo-google"
-              fullWidth
-              style={styles.socialButton}
-              textStyle={styles.socialButtonText}
-            />
           </View>
           
+          {/* Login Form */}
+          <View style={styles.formCard}>
+            <View style={styles.formHeader}>
+              <Text style={styles.formTitle}>Sign In</Text>
+              <Text style={styles.formSubtitle}>Enter your credentials to continue</Text>
+            </View>
+            
+            <View style={styles.formFields}>
+              <Input
+                label="Email Address"
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                icon="mail-outline"
+                style={styles.inputField}
+              />
+              
+              <View style={styles.passwordContainer}>
+                <Input
+                  label="Password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  icon="lock-closed-outline"
+                  style={styles.inputField}
+                />
+                <TouchableOpacity
+                  style={styles.passwordToggle}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons 
+                    name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                    size={20} 
+                    color={theme.colors.textSecondary} 
+                  />
+                </TouchableOpacity>
+              </View>
+              
+              <TouchableOpacity 
+                style={styles.forgotPasswordContainer}
+                onPress={() => navigation.navigate('reset-password')}
+              >
+                <Text style={styles.forgotPasswordText}>
+                  Forgot your password?
+                </Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              <Button
+                title={isLoading ? "Signing in..." : "Sign In"}
+                onPress={handleLogin}
+                disabled={isLoading}
+                loading={isLoading}
+                type="primary"
+                size="large"
+                fullWidth
+                gradient
+                style={styles.loginButton}
+              />
+              
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or continue with</Text>
+                <View style={styles.dividerLine} />
+              </View>
+              
+              <Button
+                title="Google"
+                onPress={handleGoogleSignIn}
+                type="secondary"
+                size="large"
+                icon="logo-google"
+                fullWidth
+                style={styles.socialButton}
+              />
+              
+              {/* Alternative Social Login Options */}
+              <View style={styles.socialAlternatives}>
+                <TouchableOpacity style={styles.socialAltButton}>
+                  <Ionicons name="logo-apple" size={24} color={theme.colors.textPrimary} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialAltButton}>
+                  <Ionicons name="logo-facebook" size={24} color={theme.colors.info} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialAltButton}>
+                  <Ionicons name="logo-twitter" size={24} color={theme.colors.info} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          
+          {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account? </Text>
-            <Text 
-              style={styles.footerLink}
-              onPress={() => navigation.navigate('signup')}
-            >
-              Sign Up
+            <TouchableOpacity onPress={() => navigation.navigate('signup')}>
+              <Text style={styles.footerLink}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {/* Quick Demo Access */}
+          <View style={styles.demoAccess}>
+            <Text style={styles.demoTitle}>Demo Access</Text>
+            <Text style={styles.demoText}>
+              Customer: john@example.com / password123{'\n'}
+              Provider: jane@example.com / password123
             </Text>
           </View>
         </ScrollView>
@@ -175,64 +239,124 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  backgroundGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: SCREEN_HEIGHT * 0.5,
+    backgroundColor: 'rgba(212, 175, 55, 0.05)',
+  },
+  header: {
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.shadows.small,
+  },
   keyboardContainer: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: spacing.xxl,
-    paddingHorizontal: isTablet ? spacing.xxl : spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxl,
+  },
+  heroSection: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: isTablet ? scaleHeight(80) : scaleHeight(60),
-    marginBottom: isTablet ? scaleHeight(60) : scaleHeight(40),
+  },
+  logoWrapper: {
+    width: isTablet ? 100 : 80,
+    height: isTablet ? 100 : 80,
+    borderRadius: isTablet ? 50 : 40,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.lg,
+    ...theme.shadows.medium,
   },
   logo: {
-    width: isTablet ? scaleWidth(120) : scaleWidth(80),
-    height: isTablet ? scaleWidth(120) : scaleWidth(80),
-    marginBottom: spacing.md,
+    width: isTablet ? 60 : 48,
+    height: isTablet ? 60 : 48,
   },
-  appName: {
-    fontSize: isTablet ? fontSize.xxl : fontSize.xl,
-    fontWeight: 'bold',
-    color: theme.colors.primary,
-    marginBottom: spacing.xs,
-  },
-  tagline: {
-    fontSize: isTablet ? fontSize.md : fontSize.sm,
-    color: theme.colors.textSecondary,
-  },
-  formContainer: {
-    width: isTablet ? '70%' : '100%',
-    alignSelf: 'center',
-    marginBottom: spacing.xl,
-  },
-  title: {
-    fontSize: isTablet ? fontSize.xxl : fontSize.xl,
-    fontWeight: 'bold',
-    marginBottom: spacing.xl,
+  heroTitle: {
+    ...theme.typography.display,
     color: theme.colors.textPrimary,
-    textAlign: isTablet ? 'center' : 'left',
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center',
+  },
+  heroSubtitle: {
+    ...theme.typography.bodySecondary,
+    textAlign: 'center',
+    paddingHorizontal: theme.spacing.md,
+    lineHeight: 24,
+  },
+  formCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
+    ...theme.shadows.large,
+  },
+  formHeader: {
+    alignItems: 'center',
+    marginBottom: theme.spacing.xl,
+  },
+  formTitle: {
+    ...theme.typography.title,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xs,
+  },
+  formSubtitle: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+  formFields: {
+    marginBottom: theme.spacing.xl,
   },
   inputField: {
-    marginBottom: spacing.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: theme.spacing.md,
+    top: 42, // Adjust based on input height
+    padding: theme.spacing.xs,
   },
   forgotPasswordContainer: {
     alignItems: 'flex-end',
-    marginBottom: spacing.xl,
+    marginTop: theme.spacing.sm,
   },
   forgotPasswordText: {
+    ...theme.typography.caption,
     color: theme.colors.primary,
-    fontSize: fontSize.sm,
+    fontWeight: '600',
+  },
+  actionButtons: {
+    gap: theme.spacing.lg,
   },
   loginButton: {
-    marginBottom: spacing.lg,
+    ...theme.shadows.medium,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: spacing.lg,
+    marginVertical: theme.spacing.md,
   },
   dividerLine: {
     flex: 1,
@@ -240,30 +364,65 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.border,
   },
   dividerText: {
-    marginHorizontal: spacing.md,
-    color: theme.colors.textSecondary,
-    fontSize: fontSize.sm,
+    ...theme.typography.caption,
+    color: theme.colors.textTertiary,
+    paddingHorizontal: theme.spacing.md,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   socialButton: {
-    marginBottom: spacing.xl,
+    borderColor: theme.colors.border,
+    backgroundColor: 'transparent',
   },
-  socialButtonText: {
-    color: theme.colors.textPrimary,
+  socialAlternatives: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.md,
+  },
+  socialAltButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: theme.colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.shadows.small,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: spacing.lg,
-    marginBottom: spacing.md,
+    alignItems: 'center',
+    paddingVertical: theme.spacing.lg,
   },
   footerText: {
+    ...theme.typography.body,
     color: theme.colors.textSecondary,
-    fontSize: fontSize.sm,
   },
   footerLink: {
+    ...theme.typography.body,
     color: theme.colors.primary,
-    fontSize: fontSize.sm,
-    fontWeight: 'bold',
+    fontWeight: '600',
+  },
+  demoAccess: {
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginTop: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.2)',
+  },
+  demoTitle: {
+    ...theme.typography.subtitle,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+    textAlign: 'center',
+  },
+  demoText: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });
 
