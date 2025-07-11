@@ -1,25 +1,63 @@
-// Firebase configuration
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+// Mock Firebase configuration (No Firebase)
+// This replaces Firebase imports with mock objects to avoid errors
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+// Mock Firebase app
+const mockApp = {
+  name: 'mock-app',
+  options: {}
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+// Mock Auth
+const mockAuth = {
+  currentUser: null,
+  onAuthStateChanged: (callback) => {
+    // Return mock unsubscribe function
+    return () => console.log('Auth listener unsubscribed');
+  },
+  signInWithEmailAndPassword: async () => {
+    throw new Error('Firebase is disabled - use mock auth service');
+  },
+  createUserWithEmailAndPassword: async () => {
+    throw new Error('Firebase is disabled - use mock auth service');
+  },
+  signOut: async () => {
+    throw new Error('Firebase is disabled - use mock auth service');
+  }
+};
 
-export { auth, db, storage };
+// Mock Firestore
+const mockDb = {
+  collection: () => ({
+    doc: () => ({
+      get: async () => ({ exists: false, data: () => ({}) }),
+      set: async () => console.log('Mock Firestore set'),
+      update: async () => console.log('Mock Firestore update'),
+      delete: async () => console.log('Mock Firestore delete')
+    }),
+    add: async () => ({ id: 'mock-doc-id' }),
+    get: async () => ({ docs: [] })
+  }),
+  doc: () => ({
+    get: async () => ({ exists: false, data: () => ({}) }),
+    set: async () => console.log('Mock Firestore set'),
+    update: async () => console.log('Mock Firestore update'),
+    delete: async () => console.log('Mock Firestore delete')
+  })
+};
+
+// Mock Storage
+const mockStorage = {
+  ref: () => ({
+    child: () => ({
+      put: async () => ({ task: 'completed' }),
+      getDownloadURL: async () => 'https://mock-url.com/image.jpg'
+    })
+  })
+};
+
+// Export mock objects
+export const auth = mockAuth;
+export const db = mockDb;
+export const storage = mockStorage;
+
+export default mockApp;

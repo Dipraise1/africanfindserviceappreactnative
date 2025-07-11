@@ -1,46 +1,62 @@
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  updateProfile,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged
-} from 'firebase/auth';
-import * as SecureStore from 'expo-secure-store';
-import { auth, db } from '../config/firebase';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+// Mock Authentication Service (No Firebase)
+// This replaces Firebase auth with simple mock functionality
 
-// Register a new user
+import * as SecureStore from 'expo-secure-store';
+
+// Mock user data
+const MOCK_USERS = [
+  {
+    id: 'user1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    password: 'password123',
+    phone: '+1234567890',
+    role: 'customer'
+  },
+  {
+    id: 'user2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    password: 'password123',
+    phone: '+0987654321',
+    role: 'provider'
+  }
+];
+
+// Helper function to create mock token
+const createMockToken = (userId) => {
+  return `mock_token_${userId}_${Date.now()}`;
+};
+
+// Register a new user (Mock)
 export const registerUser = async (name, email, phone, password, userType) => {
   try {
-    // Create user with email and password
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Update profile with display name
-    await updateProfile(user, {
-      displayName: name
-    });
+    // Check if user already exists
+    const existingUser = MOCK_USERS.find(user => user.email === email);
+    if (existingUser) {
+      throw new Error('User already exists with this email');
+    }
     
-    // Store additional user data in Firestore
-    await setDoc(doc(db, "users", user.uid), {
+    // Create new user
+    const newUser = {
+      id: `user_${Date.now()}`,
       name,
       email,
       phone,
-      role: userType, // 'customer' or 'provider'
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
+      role: userType,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Add to mock users array
+    MOCK_USERS.push({ ...newUser, password });
     
     // Store user session locally
     const userData = {
-      id: user.uid,
-      name: user.displayName,
-      email: user.email,
-      role: userType,
-      token: await user.getIdToken()
+      ...newUser,
+      token: createMockToken(newUser.id)
     };
     
     await SecureStore.setItemAsync('user_session', JSON.stringify(userData));
@@ -51,24 +67,27 @@ export const registerUser = async (name, email, phone, password, userType) => {
   }
 };
 
-// Login user
+// Login user (Mock)
 export const loginUser = async (email, password) => {
   try {
-    // Sign in with email and password
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
     
-    // Get additional user data from Firestore
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    const userData = userDoc.data();
+    // Find user in mock data
+    const user = MOCK_USERS.find(u => u.email === email && u.password === password);
+    
+    if (!user) {
+      throw new Error('Invalid email or password');
+    }
     
     // Store user session locally
     const sessionData = {
-      id: user.uid,
-      name: user.displayName,
+      id: user.id,
+      name: user.name,
       email: user.email,
-      role: userData.role,
-      token: await user.getIdToken()
+      phone: user.phone,
+      role: user.role,
+      token: createMockToken(user.id)
     };
     
     await SecureStore.setItemAsync('user_session', JSON.stringify(sessionData));
@@ -79,51 +98,32 @@ export const loginUser = async (email, password) => {
   }
 };
 
-// Google sign-in
+// Google sign-in (Mock)
 export const signInWithGoogle = async () => {
   try {
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Check if user exists in Firestore
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    
-    if (!userDoc.exists()) {
-      // Create new user document if first time login
-      await setDoc(doc(db, "users", user.uid), {
-        name: user.displayName,
-        email: user.email,
-        role: 'customer', // Default role for social login
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-    }
-    
-    // Get user data
-    const userData = userDoc.exists() ? userDoc.data() : { role: 'customer' };
-    
-    // Store user session locally
-    const sessionData = {
-      id: user.uid,
-      name: user.displayName,
-      email: user.email,
-      role: userData.role,
-      token: await user.getIdToken()
+    // Mock Google user
+    const googleUser = {
+      id: 'google_user_' + Date.now(),
+      name: 'Google User',
+      email: 'googleuser@gmail.com',
+      role: 'customer',
+      token: createMockToken('google_user')
     };
     
-    await SecureStore.setItemAsync('user_session', JSON.stringify(sessionData));
+    await SecureStore.setItemAsync('user_session', JSON.stringify(googleUser));
     
-    return sessionData;
+    return googleUser;
   } catch (error) {
-    throw error;
+    throw new Error('Google sign-in failed');
   }
 };
 
 // Logout user
 export const logoutUser = async () => {
   try {
-    await signOut(auth);
     await SecureStore.deleteItemAsync('user_session');
     return true;
   } catch (error) {
@@ -131,10 +131,20 @@ export const logoutUser = async () => {
   }
 };
 
-// Reset password
+// Reset password (Mock)
 export const resetPassword = async (email) => {
   try {
-    await sendPasswordResetEmail(auth, email);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check if user exists
+    const user = MOCK_USERS.find(u => u.email === email);
+    if (!user) {
+      throw new Error('No user found with this email address');
+    }
+    
+    // Mock successful password reset
+    console.log(`Password reset email sent to: ${email}`);
     return true;
   } catch (error) {
     throw error;
@@ -155,26 +165,25 @@ export const getCurrentUser = async () => {
   }
 };
 
-// Set up auth state listener
+// Mock auth state listener
 export const subscribeToAuthChanges = (callback) => {
-  return onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      // User is signed in
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const userData = userDoc.data();
-      
-      const sessionData = {
-        id: user.uid,
-        name: user.displayName,
-        email: user.email,
-        role: userData?.role || 'customer',
-        token: await user.getIdToken()
-      };
-      
-      callback(sessionData);
-    } else {
-      // User is signed out
-      callback(null);
-    }
+  // Check for existing session on app start
+  getCurrentUser().then(user => {
+    callback(user);
   });
+  
+  // Return a mock unsubscribe function
+  return () => {
+    console.log('Auth listener unsubscribed');
+  };
+};
+
+export default {
+  registerUser,
+  loginUser,
+  signInWithGoogle,
+  logoutUser,
+  resetPassword,
+  getCurrentUser,
+  subscribeToAuthChanges
 };

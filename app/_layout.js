@@ -1,5 +1,5 @@
-import React from 'react';
 import { Stack } from 'expo-router';
+import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
@@ -15,6 +15,22 @@ export default function RootLayout() {
           fontWeight: 'bold',
         },
       }}>
+        {/* Index route */}
+        <Stack.Screen 
+          name="index" 
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        {/* Main App Screens */}
+        <Stack.Screen 
+          name="home" 
+          options={{
+            headerShown: false,
+          }}
+        />
+
         {/* Authentication Screens */}
         <Stack.Screen 
           name="login" 
@@ -31,17 +47,25 @@ export default function RootLayout() {
           }}
         />
 
-        {/* Main App Screens */}
-        <Stack.Screen 
-          name="home" 
-          options={{
-            headerShown: false,
-          }}
-        />
+        {/* Service Screens */}
         <Stack.Screen 
           name="service-list/index" 
           options={{
             title: 'Available Services',
+            headerBackTitle: 'Back',
+          }}
+        />
+        <Stack.Screen 
+          name="service-detail/index" 
+          options={{
+            title: 'Service Details',
+            headerBackTitle: 'Back',
+          }}
+        />
+        <Stack.Screen 
+          name="service-detail-screen/index" 
+          options={{
+            title: 'Service Details',
             headerBackTitle: 'Back',
           }}
         />
@@ -52,6 +76,8 @@ export default function RootLayout() {
             headerBackTitle: 'Back',
           }}
         />
+
+        {/* Booking Screens */}
         <Stack.Screen 
           name="booking" 
           options={{
@@ -66,6 +92,8 @@ export default function RootLayout() {
             headerBackTitle: 'Back',
           }}
         />
+
+        {/* Other Screens */}
         <Stack.Screen 
           name="notifications" 
           options={{

@@ -1,24 +1,23 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Alert, 
-  KeyboardAvoidingView, 
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-  StatusBar
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { getAuth, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import {
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
-import ResponsiveContainer from '../components/ResponsiveContainer';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import ResponsiveContainer from '../components/ResponsiveContainer';
 import { theme } from '../constants/theme';
-import { isTablet, fontSize, spacing } from '../utils/responsive';
+import { fontSize, isTablet, spacing } from '../utils/responsive';
 
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
@@ -48,23 +47,8 @@ const ChangePasswordScreen = () => {
     setIsLoading(true);
 
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Re-authenticate user before changing password
-      const credential = EmailAuthProvider.credential(
-        user.email,
-        currentPassword
-      );
-
-      await reauthenticateWithCredential(user, credential);
-      
-      // Update password
-      await updatePassword(user, newPassword);
+      // Mock password change (Firebase disabled)
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
       
       Alert.alert(
         'Success', 
@@ -72,17 +56,7 @@ const ChangePasswordScreen = () => {
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (error) {
-      let errorMessage = 'Failed to change password';
-      
-      if (error.code === 'auth/wrong-password') {
-        errorMessage = 'Current password is incorrect';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'New password is too weak';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      Alert.alert('Error', errorMessage);
+      Alert.alert('Error', 'Failed to change password. Please try again.');
     } finally {
       setIsLoading(false);
     }
