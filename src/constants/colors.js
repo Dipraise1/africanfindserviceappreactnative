@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Professional 2025 Leather Black Theme
 // Sophisticated dark color palette with luxury accents
 
@@ -28,9 +29,36 @@ export const TEXT_SECONDARY = '#D1D1D6'; // Light Gray
 export const TEXT_TERTIARY = '#8E8E93'; // Medium Gray
 export const TEXT_DISABLED = '#636366'; // Disabled Gray
 export const TEXT_ACCENT = '#D4AF37'; // Gold Text
+=======
+// Savanna Luxe — African-inspired modern palette
+
+// Brand — Deep Forest Green
+export const PRIMARY = '#1B4D3E';
+export const PRIMARY_DARK = '#0F2B22';
+export const PRIMARY_MEDIUM = '#2D6A4F';
+export const PRIMARY_LIGHT = '#52B788';
+export const PRIMARY_PALE = '#D8F3DC';
+
+// Accent — African Terracotta
+export const ACCENT = '#C8553D';
+export const ACCENT_LIGHT = '#E8856E';
+export const ACCENT_PALE = '#FDEEE9';
+
+// Gold — African Harvest
+export const GOLD = '#E8A838';
+export const GOLD_DARK = '#C68A1A';
+export const GOLD_PALE = '#FDF5E4';
+
+// Text
+export const TEXT_PRIMARY = '#1A1A1A';
+export const TEXT_MEDIUM = '#4A4A4A';
+export const TEXT_SECONDARY = '#6B6B6B';
+export const TEXT_LIGHT = '#9A9A9A';
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
 export const TEXT_WHITE = '#FFFFFF';
 export const TEXT_BLACK = '#000000';
 
+<<<<<<< HEAD
 // Status Colors - Modern & Vibrant
 export const SUCCESS = '#30D158'; // Modern Green
 export const SUCCESS_LIGHT = '#59D180';
@@ -69,11 +97,37 @@ export const ONLINE = '#30D158'; // Online Green
 export const OFFLINE = '#8E8E93'; // Offline Gray
 
 // Transparent Colors
+=======
+// Backgrounds
+export const BACKGROUND = '#FAF7F4';
+export const SURFACE = '#FFFFFF';
+export const SURFACE_WARM = '#F5F0E8';
+export const SURFACE_TINTED = '#F0EDE8';
+
+// Borders
+export const BORDER = '#E8E0D5';
+export const BORDER_LIGHT = '#F0EBE3';
+
+// Status
+export const SUCCESS = '#22C55E';
+export const SUCCESS_PALE = '#DCFCE7';
+export const ERROR = '#EF4444';
+export const ERROR_PALE = '#FEE2E2';
+export const WARNING = '#F59E0B';
+export const WARNING_PALE = '#FEF3C7';
+export const INFO = '#3B82F6';
+export const INFO_PALE = '#DBEAFE';
+
+// Base
+export const WHITE = '#FFFFFF';
+export const BLACK = '#000000';
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
 export const TRANSPARENT = 'transparent';
 export const WHITE_OVERLAY = 'rgba(255, 255, 255, 0.1)';
 export const BLACK_OVERLAY = 'rgba(0, 0, 0, 0.5)';
 export const GLASS_OVERLAY = 'rgba(255, 255, 255, 0.05)';
 
+<<<<<<< HEAD
 // Gradient Definitions - 2025 Professional Gradients
 export const GRADIENTS = {
   primary: ['#D4AF37', '#B8941F'], // Gold Gradient
@@ -186,6 +240,38 @@ export const TYPOGRAPHY = {
     letterSpacing: 0.2,
     color: TEXT_WHITE,
   },
+=======
+// Overlay
+export const OVERLAY = 'rgba(26, 26, 26, 0.6)';
+export const OVERLAY_LIGHT = 'rgba(26, 26, 26, 0.3)';
+
+// Social
+export const GOOGLE = '#DB4437';
+export const FACEBOOK = '#3B5998';
+
+// Rating
+export const RATING = '#E8A838';
+
+// Shadow
+export const SHADOW = {
+  shadowColor: '#1A1A1A',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+  elevation: 3,
+};
+
+// Category accent colors — warm, earthy spectrum
+export const CATEGORY_COLORS = {
+  plumber:     { bg: '#E8F4FD', icon: '#1A7EC8' },
+  electrician: { bg: '#FDF5E4', icon: '#C68A1A' },
+  carpenter:   { bg: '#FDF0E8', icon: '#B8531A' },
+  cleaner:     { bg: '#E4FDF5', icon: '#0F8C6A' },
+  mechanic:    { bg: '#FDE8E8', icon: '#C81A1A' },
+  beautician:  { bg: '#F5E4FD', icon: '#8C0FC8' },
+  painter:     { bg: '#EDE4FD', icon: '#5B0FBF' },
+  gardener:    { bg: '#E8FDE4', icon: '#1A8C0F' },
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
 };
 
 // Modern Component Styles - Glass Morphism & Professional Design

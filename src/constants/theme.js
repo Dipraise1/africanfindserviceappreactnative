@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { fontSize, spacing } from '../utils/responsive';
 import {
     ACCENT,
@@ -32,31 +33,77 @@ import {
 // Professional 2025 Theme - Leather Black Edition
 export const theme = {
   // Color Palette - Luxury Dark Theme
+=======
+import {
+  PRIMARY, PRIMARY_DARK, PRIMARY_MEDIUM, PRIMARY_LIGHT, PRIMARY_PALE,
+  ACCENT, ACCENT_LIGHT, ACCENT_PALE,
+  GOLD, GOLD_DARK, GOLD_PALE,
+  TEXT_PRIMARY, TEXT_MEDIUM, TEXT_SECONDARY, TEXT_LIGHT, TEXT_WHITE,
+  BACKGROUND, SURFACE, SURFACE_WARM, BORDER, BORDER_LIGHT,
+  SUCCESS, SUCCESS_PALE, ERROR, ERROR_PALE, WARNING, WARNING_PALE, INFO, INFO_PALE,
+  WHITE, BLACK, TRANSPARENT, OVERLAY, RATING,
+} from './colors';
+import { spacing, borderRadius, fontSize } from '../utils/responsive';
+
+export const theme = {
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
   colors: {
     // Brand Colors
     primary: PRIMARY,
+<<<<<<< HEAD
     secondary: SECONDARY,
     accent: ACCENT,
     
     // Background & Surface
+=======
+    primaryDark: PRIMARY_DARK,
+    primaryMedium: PRIMARY_MEDIUM,
+    primaryLight: PRIMARY_LIGHT,
+    primaryPale: PRIMARY_PALE,
+    accent: ACCENT,
+    accentLight: ACCENT_LIGHT,
+    accentPale: ACCENT_PALE,
+    gold: GOLD,
+    goldDark: GOLD_DARK,
+    goldPale: GOLD_PALE,
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
     background: BACKGROUND,
     backgroundSoft: '#121212',
     surface: SURFACE,
+<<<<<<< HEAD
     surfaceElevated: SURFACE_ELEVATED,
     card: CARD_BACKGROUND,
     overlay: 'rgba(0, 0, 0, 0.8)',
     
     // Text Colors
     text: TEXT_PRIMARY,
+=======
+    surfaceWarm: SURFACE_WARM,
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
     textPrimary: TEXT_PRIMARY,
+    textMedium: TEXT_MEDIUM,
     textSecondary: TEXT_SECONDARY,
+<<<<<<< HEAD
     textTertiary: TEXT_TERTIARY,
     textAccent: TEXT_ACCENT,
     textInverse: '#000000',
     
     // Status Colors
+=======
+    textLight: TEXT_LIGHT,
+    white: WHITE,
+    black: BLACK,
+    transparent: TRANSPARENT,
+    overlay: OVERLAY,
+    border: BORDER,
+    borderLight: BORDER_LIGHT,
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
     success: SUCCESS,
+    successPale: SUCCESS_PALE,
+    error: ERROR,
+    errorPale: ERROR_PALE,
     warning: WARNING,
+<<<<<<< HEAD
     error: ERROR,
     info: INFO,
     
@@ -408,6 +455,48 @@ export const theme = {
         alignItems: 'center',
         ...SHADOWS.large,
       },
+=======
+    warningPale: WARNING_PALE,
+    info: INFO,
+    infoPale: INFO_PALE,
+    rating: RATING,
+    notification: ACCENT,
+    card: SURFACE,
+  },
+
+  spacing,
+  borderRadius,
+  fontSize,
+
+  shadows: {
+    xs: {
+      shadowColor: '#1A1A1A',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    small: {
+      shadowColor: '#1A1A1A',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.07,
+      shadowRadius: 6,
+      elevation: 2,
+    },
+    medium: {
+      shadowColor: '#1A1A1A',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.09,
+      shadowRadius: 12,
+      elevation: 4,
+    },
+    large: {
+      shadowColor: '#1A1A1A',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 20,
+      elevation: 8,
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
     },
   },
   

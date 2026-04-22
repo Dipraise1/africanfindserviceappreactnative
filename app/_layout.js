@@ -3,9 +3,9 @@ import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
-
   return (
     <SafeAreaProvider>
+<<<<<<< HEAD
       <Stack screenOptions={{
         headerStyle: {
           backgroundColor: '#4CAF50',
@@ -52,9 +52,25 @@ export default function RootLayout() {
           name="service-list/index" 
           options={{
             title: 'Available Services',
+=======
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="signup" />
+        <Stack.Screen
+          name="service-details"
+          options={{
+            headerShown: true,
+            headerTitle: 'Service Details',
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1B4D3E',
+            headerTitleStyle: { fontWeight: '700', color: '#1A1A1A' },
           }}
         />
+<<<<<<< HEAD
         <Stack.Screen 
           name="service-detail/index" 
           options={{
@@ -71,59 +87,88 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="service-details" 
+=======
+        <Stack.Screen
+          name="booking"
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
           options={{
-            title: 'Service Details',
+            headerShown: true,
+            headerTitle: 'Book Service',
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1B4D3E',
+            headerTitleStyle: { fontWeight: '700', color: '#1A1A1A' },
           }}
         />
+<<<<<<< HEAD
 
         {/* Booking Screens */}
         <Stack.Screen 
           name="booking" 
+=======
+        <Stack.Screen
+          name="notifications"
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
           options={{
-            title: 'Book Service',
+            headerShown: true,
+            headerTitle: 'Notifications',
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1B4D3E',
+            headerTitleStyle: { fontWeight: '700', color: '#1A1A1A' },
           }}
         />
-        <Stack.Screen 
-          name="booking-history" 
+        <Stack.Screen
+          name="favorites"
           options={{
-            title: 'My Bookings',
+            headerShown: true,
+            headerTitle: 'Favourites',
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1B4D3E',
+            headerTitleStyle: { fontWeight: '700', color: '#1A1A1A' },
           }}
         />
+<<<<<<< HEAD
 
         {/* Other Screens */}
         <Stack.Screen 
           name="notifications" 
+=======
+        <Stack.Screen
+          name="public-profile"
+>>>>>>> 2167f17 (Modernise UI, add bottom tabs, demo sign-in, and fix Firebase auth)
           options={{
-            title: 'Notifications',
+            headerShown: true,
+            headerTitle: 'Provider Profile',
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1B4D3E',
+            headerTitleStyle: { fontWeight: '700', color: '#1A1A1A' },
           }}
         />
-        <Stack.Screen 
-          name="favorites" 
+        <Stack.Screen
+          name="booking-history"
           options={{
-            title: 'My Favorites',
+            headerShown: true,
+            headerTitle: 'My Bookings',
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1B4D3E',
+            headerTitleStyle: { fontWeight: '700', color: '#1A1A1A' },
           }}
         />
-
-        {/* Profile Screens */}
-        <Stack.Screen 
-          name="profile" 
+        <Stack.Screen
+          name="service-list/index"
           options={{
-            title: 'My Profile',
+            headerShown: true,
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1B4D3E',
+            headerTitleStyle: { fontWeight: '700', color: '#1A1A1A' },
           }}
         />
-        <Stack.Screen 
-          name="public-profile" 
-          options={{
-            title: 'Provider Profile',
-            headerBackTitle: 'Back',
-          }}
-        />
+        <Stack.Screen name="home" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>
   );

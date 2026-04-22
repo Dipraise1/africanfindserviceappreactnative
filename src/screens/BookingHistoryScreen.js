@@ -1,463 +1,279 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  Image,
-  StatusBar,
-  Platform
+  View, Text, StyleSheet, FlatList, TouchableOpacity,
+  ActivityIndicator, StatusBar, Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { getUserBookings } from '../services/apiService';
 
-import ResponsiveContainer from '../components/ResponsiveContainer';
-import Button from '../components/Button';
-import Card from '../components/Card';
-import Header from '../components/Header';
-import { theme } from '../constants/theme';
-import { isTablet, scaleWidth, scaleHeight, fontSize, spacing, borderRadius } from '../utils/responsive';
+const STATUS_CONFIG = {
+  confirmed:  { color: '#22C55E', bg: '#DCFCE7', label: 'Confirmed' },
+  pending:    { color: '#F59E0B', bg: '#FEF3C7', label: 'Pending'   },
+  cancelled:  { color: '#EF4444', bg: '#FEE2E2', label: 'Cancelled' },
+  completed:  { color: '#3B82F6', bg: '#DBEAFE', label: 'Completed' },
+};
 
-const BookingHistoryScreen = ({ navigation }) => {
+function formatDate(dateStr) {
+  try {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+function BookingCard({ item, onCancel }) {
+  const isUpcoming = new Date(item.date) >= new Date();
+  const status     = STATUS_CONFIG[item.status] ?? STATUS_CONFIG.pending;
+  const router     = useRouter();
+
+  return (
+    <View style={bCard.wrap}>
+      {/* Top row */}
+      <View style={bCard.topRow}>
+        <View style={bCard.serviceInfo}>
+          {item.serviceImage
+            ? <Image source={{ uri: item.serviceImage }} style={bCard.avatar} />
+            : <View style={[bCard.avatar, bCard.avatarPlaceholder]}>
+                <Ionicons name="construct-outline" size={20} color="#9A9A9A" />
+              </View>
+          }
+          <View style={{ flex: 1 }}>
+            <Text style={bCard.serviceName} numberOfLines={1}>{item.serviceName}</Text>
+            <Text style={bCard.providerName} numberOfLines={1}>{item.providerName}</Text>
+          </View>
+        </View>
+        <View style={[bCard.badge, { backgroundColor: status.bg }]}>
+          <Text style={[bCard.badgeText, { color: status.color }]}>{status.label}</Text>
+        </View>
+      </View>
+
+      {/* Details */}
+      <View style={bCard.details}>
+        <View style={bCard.detailRow}>
+          <Ionicons name="calendar-outline" size={14} color="#6B6B6B" />
+          <Text style={bCard.detailText}>{formatDate(item.date)}</Text>
+        </View>
+        <View style={bCard.detailRow}>
+          <Ionicons name="time-outline" size={14} color="#6B6B6B" />
+          <Text style={bCard.detailText}>{item.time || '—'}</Text>
+        </View>
+        <View style={bCard.detailRow}>
+          <Ionicons name="location-outline" size={14} color="#6B6B6B" />
+          <Text style={bCard.detailText} numberOfLines={1}>{item.location || '—'}</Text>
+        </View>
+      </View>
+
+      {/* Ref */}
+      <Text style={bCard.ref}>Ref: {item.reference}</Text>
+
+      {/* Actions */}
+      {isUpcoming && item.status !== 'cancelled' && (
+        <View style={bCard.actions}>
+          <TouchableOpacity
+            style={bCard.btnReschedule}
+            onPress={() => router.push({ pathname: '/booking', params: { serviceId: item.serviceId } })}
+          >
+            <Ionicons name="calendar-outline" size={14} color="#1B4D3E" />
+            <Text style={bCard.btnRescheduleText}>Reschedule</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={bCard.btnCancel} onPress={() => onCancel(item.id)}>
+            <Text style={bCard.btnCancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {!isUpcoming && item.status === 'completed' && !item.isRated && (
+        <TouchableOpacity style={bCard.btnRate}>
+          <Ionicons name="star-outline" size={14} color="#E8A838" />
+          <Text style={bCard.btnRateText}>Rate this service</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+export default function BookingHistoryScreen() {
+  const router = useRouter();
   const [bookings, setBookings] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
+  const [tab, setTab]           = useState('upcoming');
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  useEffect(() => { fetchBookings(); }, []);
 
   const fetchBookings = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       const data = await getUserBookings();
-      setBookings(data);
+      setBookings(data ?? []);
       setError(null);
-    } catch (err) {
-      setError('Failed to load bookings');
-      console.error(err);
+    } catch {
+      setError('Failed to load bookings.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const renderBookingItem = ({ item }) => {
-    const isPast = new Date(item.date) < new Date();
-    const isUpcoming = !isPast;
-    
-    if ((activeTab === 'upcoming' && !isUpcoming) || 
-        (activeTab === 'past' && !isPast)) {
-      return null;
-    }
-
-    return (
-      <Card 
-        style={[styles.bookingCard, isTablet && styles.tabletBookingCard]}
-        onPress={() => navigation.navigate('service-detail', { serviceId: item.serviceId })}
-      >
-        <View style={styles.bookingHeader}>
-          <View style={styles.serviceInfo}>
-            <Image source={{ uri: item.serviceImage }} style={styles.serviceImage} />
-            <View style={styles.serviceTextContainer}>
-              <Text style={styles.serviceName} numberOfLines={1} ellipsizeMode="tail">{item.serviceName}</Text>
-              <Text style={styles.providerName} numberOfLines={1} ellipsizeMode="tail">{item.providerName}</Text>
-            </View>
-          </View>
-          <View style={[
-            styles.statusBadge, 
-            { backgroundColor: getStatusColor(item.status) + '20' }
-          ]}>
-            <Text style={[
-              styles.statusText, 
-              { color: getStatusColor(item.status) }
-            ]}>
-              {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.bookingDetails}>
-          <View style={styles.detailItem}>
-            <Ionicons name="calendar-outline" size={isTablet ? 20 : 16} color={theme.colors.textSecondary} />
-            <Text style={styles.detailText}>{formatDate(item.date)}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Ionicons name="time-outline" size={isTablet ? 20 : 16} color={theme.colors.textSecondary} />
-            <Text style={styles.detailText}>{item.time}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Ionicons name="location-outline" size={isTablet ? 20 : 16} color={theme.colors.textSecondary} />
-            <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="tail">{item.location}</Text>
-          </View>
-        </View>
-
-        <View style={styles.bookingFooter}>
-          <Text style={styles.referenceText}>
-            Booking Ref: {item.reference}
-          </Text>
-          
-          {isUpcoming && (
-            <View style={styles.actionButtons}>
-              <Button 
-                title="Reschedule"
-                icon="calendar-outline"
-                onPress={() => navigation.navigate('booking', { 
-                  serviceId: item.serviceId,
-                  isReschedule: true,
-                  bookingId: item.id
-                })}
-                type="primary"
-                size="small"
-                style={styles.rescheduleButton}
-              />
-              
-              <Button 
-                title="Cancel"
-                icon="close-circle-outline"
-                onPress={() => handleCancelBooking(item.id)}
-                type="outline"
-                size="small"
-                style={styles.cancelButton}
-              />
-            </View>
-          )}
-          
-          {isPast && item.status === 'completed' && !item.isRated && (
-            <Button 
-              title="Rate Service"
-              icon="star-outline"
-              onPress={() => navigation.navigate('rate-service', { 
-                serviceId: item.serviceId,
-                bookingId: item.id
-              })}
-              type="primary"
-              size="small"
-              style={styles.rateButton}
-            />
-          )}
-        </View>
-      </Card>
-    );
+  const handleCancel = (id) => {
+    setBookings(bs => bs.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
   };
 
-  const handleCancelBooking = (bookingId) => {
-    // In a real app, you would call an API to cancel the booking
-    // For now, just update the local state
-    const updatedBookings = bookings.map(booking => {
-      if (booking.id === bookingId) {
-        return { ...booking, status: 'cancelled' };
-      }
-      return booking;
-    });
-    setBookings(updatedBookings);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'confirmed':
-        return '#4CAF50'; // Green
-      case 'pending':
-        return '#FFC107'; // Yellow
-      case 'cancelled':
-        return '#F44336'; // Red
-      case 'completed':
-        return '#2196F3'; // Blue
-      default:
-        return '#9E9E9E'; // Grey
-    }
-  };
-
-  const formatDate = (dateString) => {
-    const options = { weekday: 'short', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
-  };
-
-  if (isLoading) {
-    return (
-      <ResponsiveContainer style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-        <Header title="Booking History" onBack={() => navigation.goBack()} />
-        <View style={styles.centeredContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={styles.loadingText}>Loading bookings...</Text>
-        </View>
-      </ResponsiveContainer>
-    );
-  }
-
-  if (error) {
-    return (
-      <ResponsiveContainer style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-        <Header title="Booking History" onBack={() => navigation.goBack()} />
-        <View style={styles.centeredContainer}>
-          <Ionicons name="alert-circle-outline" size={isTablet ? 64 : 48} color={theme.colors.error} />
-          <Text style={styles.errorText}>{error}</Text>
-          <Button 
-            title="Retry" 
-            onPress={fetchBookings} 
-            type="primary"
-            size={isTablet ? "medium" : "small"}
-            style={styles.retryButton}
-          />
-        </View>
-      </ResponsiveContainer>
-    );
-  }
-
-  if (bookings.length === 0) {
-    return (
-      <ResponsiveContainer style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-        <Header title="Booking History" onBack={() => navigation.goBack()} />
-        <View style={styles.centeredContainer}>
-          <Ionicons 
-            name="calendar-outline" 
-            size={isTablet ? 80 : 64} 
-            color={theme.colors.textSecondary} 
-          />
-          <Text style={styles.emptyTitle}>No Bookings Yet</Text>
-          <Text style={styles.emptySubtitle}>
-            You haven't made any bookings yet. Explore services and book your first appointment.
-          </Text>
-          <Button 
-            title="Explore Services"
-            onPress={() => navigation.navigate('home')}
-            type="primary"
-            size={isTablet ? "large" : "medium"}
-            icon="search"
-            style={styles.exploreButton}
-          />
-        </View>
-      </ResponsiveContainer>
-    );
-  }
-
-  const upcomingBookings = bookings.filter(booking => new Date(booking.date) >= new Date());
-  const pastBookings = bookings.filter(booking => new Date(booking.date) < new Date());
+  const upcoming = bookings.filter(b => new Date(b.date) >= new Date());
+  const past     = bookings.filter(b => new Date(b.date) <  new Date());
+  const visible  = tab === 'upcoming' ? upcoming : past;
 
   return (
-    <ResponsiveContainer style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-      <Header title="Booking History" onBack={() => navigation.goBack()} />
-      
-      <View style={styles.tabContainer}>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]}
-          onPress={() => setActiveTab('upcoming')}
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FAF7F4" />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>My Bookings</Text>
+        <TouchableOpacity
+          style={styles.refreshBtn}
+          onPress={fetchBookings}
         >
-          <Text style={[
-            styles.tabText, 
-            activeTab === 'upcoming' && styles.activeTabText
-          ]}>
-            Upcoming ({upcomingBookings.length})
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'past' && styles.activeTab]}
-          onPress={() => setActiveTab('past')}
-        >
-          <Text style={[
-            styles.tabText, 
-            activeTab === 'past' && styles.activeTabText
-          ]}>
-            Past ({pastBookings.length})
-          </Text>
+          <Ionicons name="refresh-outline" size={20} color="#1B4D3E" />
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={bookings}
-        renderItem={renderBookingItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        numColumns={isTablet ? 2 : 1}
-        key={isTablet ? 'tablet' : 'phone'}
-      />
-    </ResponsiveContainer>
+      {/* Tabs */}
+      <View style={styles.tabBar}>
+        {[
+          { key: 'upcoming', label: `Upcoming (${upcoming.length})` },
+          { key: 'past',     label: `Past (${past.length})`         },
+        ].map((t) => (
+          <TouchableOpacity
+            key={t.key}
+            style={[styles.tab, tab === t.key && styles.tabActive]}
+            onPress={() => setTab(t.key)}
+          >
+            <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
+              {t.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#1B4D3E" />
+          <Text style={styles.centerText}>Loading bookings…</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.center}>
+          <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
+          <Text style={styles.centerText}>{error}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={fetchBookings}>
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : visible.length === 0 ? (
+        <View style={styles.center}>
+          <Ionicons name="calendar-outline" size={64} color="#E8E0D5" />
+          <Text style={styles.emptyTitle}>
+            {tab === 'upcoming' ? 'No upcoming bookings' : 'No past bookings'}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {tab === 'upcoming' ? 'Book a service to get started.' : 'Your completed bookings will show here.'}
+          </Text>
+          {tab === 'upcoming' && (
+            <TouchableOpacity style={styles.exploreBtn} onPress={() => router.push('/(tabs)/explore')}>
+              <Text style={styles.exploreBtnText}>Explore Services</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <FlatList
+          data={visible}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => <BookingCard item={item} onCancel={handleCancel} />}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
+  safe:   { flex: 1, backgroundColor: '#FAF7F4' },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12,
   },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.xl,
+  title:      { fontSize: 26, fontWeight: '800', color: '#1A1A1A', letterSpacing: -0.5 },
+  refreshBtn: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#1A1A1A', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
-  loadingText: {
-    marginTop: spacing.md,
-    fontSize: isTablet ? fontSize.md : fontSize.sm,
-    color: theme.colors.textSecondary,
+
+  tabBar: {
+    flexDirection: 'row', marginHorizontal: 20,
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 4,
+    marginBottom: 16,
+    shadowColor: '#1A1A1A', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 6, elevation: 1,
   },
-  errorText: {
-    marginTop: spacing.md,
-    fontSize: isTablet ? fontSize.md : fontSize.sm,
-    color: theme.colors.error,
-    textAlign: 'center',
-    marginBottom: spacing.md,
-  },
-  retryButton: {
-    marginTop: spacing.md,
-  },
-  emptyTitle: {
-    fontSize: isTablet ? fontSize.xl : fontSize.lg,
-    fontWeight: 'bold',
-    color: theme.colors.textPrimary,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  emptySubtitle: {
-    fontSize: isTablet ? fontSize.md : fontSize.sm,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.xl,
-    maxWidth: isTablet ? 500 : '100%',
-  },
-  exploreButton: {
-    marginTop: spacing.md,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: theme.colors.surfaceLight,
-    padding: spacing.xs,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    borderRadius: borderRadius.sm,
-  },
-  activeTab: {
-    backgroundColor: theme.colors.surface,
-    ...Platform.select({
-      ios: {
-        shadowColor: theme.colors.shadow,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  tabText: {
-    fontSize: isTablet ? fontSize.md : fontSize.sm,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-  },
-  activeTabText: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  listContainer: {
-    padding: spacing.md,
-    paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
-  },
-  bookingCard: {
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-  },
-  tabletBookingCard: {
-    width: '48%',
-    marginHorizontal: '1%',
-  },
-  bookingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  serviceInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  serviceTextContainer: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  serviceImage: {
-    width: isTablet ? 60 : 50,
-    height: isTablet ? 60 : 50,
-    borderRadius: isTablet ? 30 : 25,
-    marginRight: spacing.sm,
-  },
-  serviceName: {
-    fontSize: isTablet ? fontSize.md : fontSize.sm,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: spacing.xxs,
-  },
-  providerName: {
-    fontSize: isTablet ? fontSize.sm : fontSize.xs,
-    color: theme.colors.textSecondary,
-  },
-  statusBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    borderRadius: borderRadius.round,
-    marginLeft: spacing.xs,
-  },
-  statusText: {
-    fontSize: isTablet ? fontSize.xs : fontSize.xxs,
-    fontWeight: '600',
-  },
-  bookingDetails: {
-    backgroundColor: theme.colors.surfaceLight,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  detailText: {
-    fontSize: isTablet ? fontSize.sm : fontSize.xs,
-    color: theme.colors.textPrimary,
-    marginLeft: spacing.sm,
-    flex: 1,
-  },
-  bookingFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  },
-  referenceText: {
-    fontSize: isTablet ? fontSize.xs : fontSize.xxs,
-    color: theme.colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-  },
-  rescheduleButton: {
-    marginRight: spacing.xs,
-  },
-  cancelButton: {
-  },
-  rateButton: {
-  },
+  tab:          { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
+  tabActive:    { backgroundColor: '#1B4D3E' },
+  tabText:      { fontSize: 13, fontWeight: '600', color: '#9A9A9A' },
+  tabTextActive:{ color: '#FFFFFF' },
+
+  list: { paddingHorizontal: 20, paddingBottom: 32, gap: 14 },
+
+  center:       { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+  centerText:   { fontSize: 14, color: '#6B6B6B', marginTop: 12, textAlign: 'center' },
+  emptyTitle:   { fontSize: 18, fontWeight: '700', color: '#1A1A1A', marginTop: 16, textAlign: 'center' },
+  emptySubtitle:{ fontSize: 14, color: '#6B6B6B', marginTop: 6, textAlign: 'center', lineHeight: 20 },
+  retryBtn:     { marginTop: 16, backgroundColor: '#1B4D3E', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 11 },
+  retryText:    { color: '#FFFFFF', fontWeight: '700' },
+  exploreBtn:   { marginTop: 20, backgroundColor: '#1B4D3E', borderRadius: 14, paddingHorizontal: 28, paddingVertical: 13 },
+  exploreBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
 });
 
-export default BookingHistoryScreen;
+const bCard = StyleSheet.create({
+  wrap: {
+    backgroundColor: '#FFFFFF', borderRadius: 18, padding: 16,
+    shadowColor: '#1A1A1A', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
+  },
+  topRow:    { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  serviceInfo: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
+  avatar:    { width: 48, height: 48, borderRadius: 14 },
+  avatarPlaceholder: { backgroundColor: '#F0EBE3', alignItems: 'center', justifyContent: 'center' },
+  serviceName:  { fontSize: 14, fontWeight: '700', color: '#1A1A1A', marginBottom: 2 },
+  providerName: { fontSize: 12, color: '#6B6B6B' },
+  badge:        { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  badgeText:    { fontSize: 11, fontWeight: '700' },
+
+  details:    { backgroundColor: '#FAF7F4', borderRadius: 12, padding: 12, gap: 8, marginBottom: 10 },
+  detailRow:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  detailText: { fontSize: 13, color: '#4A4A4A', flex: 1 },
+
+  ref:        { fontSize: 11, color: '#9A9A9A', marginBottom: 12 },
+
+  actions:          { flexDirection: 'row', gap: 10 },
+  btnReschedule:    {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, borderWidth: 1.5, borderColor: '#1B4D3E',
+    borderRadius: 10, paddingVertical: 10,
+  },
+  btnRescheduleText:{ color: '#1B4D3E', fontWeight: '700', fontSize: 13 },
+  btnCancel:        {
+    paddingHorizontal: 18, paddingVertical: 10,
+    borderRadius: 10, borderWidth: 1.5, borderColor: '#E8E0D5',
+  },
+  btnCancelText:    { color: '#6B6B6B', fontWeight: '600', fontSize: 13 },
+
+  btnRate: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, backgroundColor: '#FDF5E4', borderRadius: 10, paddingVertical: 10,
+  },
+  btnRateText: { color: '#C68A1A', fontWeight: '700', fontSize: 13 },
+});
